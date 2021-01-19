@@ -1,7 +1,3 @@
-p_adjust_func <- function(method, data) {
-  stats::setNames(data.frame(stats::p.adjust(data[["p"]], method = method)), paste0("p_", method))
-}
-
 #' @export
 t_test_one_sample <- function(data, x, mu, p_adjust = "bonferroni") {
   t_results <- data %>%
@@ -15,6 +11,8 @@ t_test_one_sample <- function(data, x, mu, p_adjust = "bonferroni") {
     dplyr::select(-ttest, -data)
 
   adjust_p_df <- purrr::map_dfc(p_adjust, ~ p_adjust_func(method = .x, data = t_results))
+  # c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY",
+  #   "fdr", "none")
   t_results <- t_results %>%
     dplyr::bind_cols(adjust_p_df)
   return(t_results)
