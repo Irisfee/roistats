@@ -17,4 +17,5 @@ Imports:
     dplyr,
     tidyr,
     magrittr,
-    purrr
+    purrr,
+    stats

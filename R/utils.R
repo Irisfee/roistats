@@ -3,7 +3,7 @@ p_adjust_func <- function(method, data) {
 }
 
 p_range <- function(p) {
-  # add error
+  if (!is.numeric(p))  stop('P values should be numeric.')
   if (p >= 0.05) {
     star_note <- ""
   }
