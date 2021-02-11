@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/Irisfee/roistats/workflows/R-CMD-check/badge.svg)](https://github.com/Irisfee/roistats/actions)
+[![Codecov test coverage](https://codecov.io/gh/Irisfee/roistats/branch/main/graph/badge.svg)](https://codecov.io/gh/Irisfee/roistats?branch=main)
 <!-- badges: end -->
 
 The goal of roistats is to ...
