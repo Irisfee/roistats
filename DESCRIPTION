@@ -7,8 +7,12 @@ Authors@R:
            role = c("aut", "cre"),
            email = "fay.zz0213@gmail.com",
            comment = c(ORCID = "0000-0002-6511-8507"))
-Description: What the package does (one paragraph).
+Description: The goal of this package is for easily applying same t-tests/basic data description across several sub-groups, with the output as a nice arranged data.frame. Multiple comparison and the significance symbols are also provided.
 License: MIT + file LICENSE
+Depends: 
+    R (>= 3.5.0)
+URL: https://github.com/Irisfee/roistats
+BugReports: https://github.com/Irisfee/roistats/issues
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
