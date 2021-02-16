@@ -60,7 +60,7 @@ Yay! We have obtained the `SEM` (which is commonly used for error bar plotting i
 
 ## One-sample t-tests for all sub-groups
 
-Now, we want to test whether `color_index` is significantly against 0 for each sub-group (`roi_id`). That is, for each `roi_id` sub-group, we want to test whether the values of column `color_index` of the data.frame `color_index` is significantly different from `0`. Here, we have eight sub-groups, which means we will get eight one-sample t-test results in total. At a first step analysis to figure out which brain region would be interesting, we don't care much about the very detailed output from the `t.test` function provided by `{stats}` package. So, here we have this `t_test_one_sample` function that help us apply the same t-test on each sub-group, extract the key results, and wrap everything in a `data.frame`.
+Now, we want to test whether `color_index` is significantly against 0 for each sub-group (`roi_id`). That is, for each `roi_id` sub-group, we want to test whether the values of column `color_index` of the data.frame `color_index` is significantly different from `0`. Here, we have eight sub-groups, which means we will get eight one-sample t-test results in total. At a first step analysis to figure out which brain region would be interesting, we don't care much about the very detailed output from the `t.test` function provided by `{stats}` package. So, here we have this `t_test_one_sample` function that help us apply the same t-test to each sub-group, extract the key results, and wrap everything in a `data.frame`.
 
 Again, the data.frame `color_index` was already grouped by `roi_id`. 
 
@@ -80,4 +80,51 @@ knitr::kable(color_index_one_sample_t_res, digits = 3)
 
 ## Significance symbols for a even clearer table and possible visulization
 
-Usally,
+Usually, we want the significance symbol to highlight the result table or the plot. Here we have the `p_range`
+function to create the significance symbol:
+
+```{r, message = FALSE}
+library(dplyr)
+color_index_one_sample_t_with_sig <- color_index_one_sample_t_res %>% 
+  mutate(sig_origin_p = p_range(p))
+knitr::kable(color_index_one_sample_t_with_sig, digits = 3)
+```
+You can use `p_range` for a single number too:
+
+```{r}
+p_range(0.002)
+```
+
+## Two-sample t-tests for all sub-groups
+
+`t_test_two_sample` is for applying two-sample t-tests to all sub-groups.
+
+Here we have `color_index_two_sample`:
+* `subj_id`: identify the subjects. This labels the single data point within each `roi_id`.
+* `roi_id`: brain sub-region that of interest for the analysis. We are interested in eight brain regions.
+* `group`: whether the test was `Paired` condition or `Control` condition.
+* `color_effect`: the value that indicate the memory trace of color. For each `subj_id` at each with each test condition `group` at each brain region`roi_id`, we obtained a single `color_effect` value.
+
+Note, the data.frame was already grouped by `roi_id`. 
+
+```{r}
+head(color_index_two_sample)
+str(color_index_two_sample)
+```
+
+Here is the example of how to obtain the paired t-test for each sub-group:
+
+```{r}
+t_test_two_sample(color_index_two_sample, x = "color_effect", y = "group", paired = TRUE)
+```
+
+Can be integrated into `tidyverse` pipeline too.
+
+```{r}
+color_index_two_sample_t_res <- color_index_two_sample %>%
+  t_test_two_sample(
+    x = "color_effect", y = "group", paired = TRUE, p_adjust = c("bonferroni","fdr")
+  )
+knitr::kable(color_index_two_sample_t_res, digits = 3)
+```
+

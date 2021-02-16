@@ -41,3 +41,32 @@ devtools::install_github("Irisfee/roistats")
 
 ## Usage
 
+### Get some basic description about the data
+```{r setup}
+library(roistats)
+str(color_index)
+head(color_index)
+df_sem(color_index, color_index) 
+```
+
+### One-sample t-tests for all sub-groups
+
+```{r}
+t_test_one_sample(color_index, "color_index", mu = 0)
+```
+
+### With significance symbol as output
+
+```{r, message = FALSE}
+library(dplyr)
+color_index_one_sample_t_with_sig <- color_index %>% 
+  t_test_one_sample("color_index", mu = 0, p_adjust = c("bonferroni","fdr")) %>% 
+  mutate(sig_origin_p = p_range(p))
+knitr::kable(color_index_one_sample_t_with_sig, digits = 3)
+```
+
+### Two-sample t-tests for all sub-groups
+
+```{r}
+t_test_two_sample(color_index_two_sample, x = "color_effect", y = "group", paired = TRUE)
+```
