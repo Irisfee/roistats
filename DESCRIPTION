@@ -18,8 +18,12 @@ Imports:
     tidyr,
     magrittr,
     purrr,
-    stats
+    stats,
+    rlang
 Suggests: 
     testthat (>= 3.0.0),
-    covr
+    covr,
+    knitr,
+    rmarkdown
 Config/testthat/edition: 3
+VignetteBuilder: knitr

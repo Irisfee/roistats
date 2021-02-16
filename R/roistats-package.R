@@ -1,5 +1,6 @@
 #' @keywords internal
 #' @importFrom magrittr %>%
+#' @importFrom rlang .data
 "_PACKAGE"
 
 # The following block is used by usethis to automatically manage

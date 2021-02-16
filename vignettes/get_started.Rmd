@@ -1,0 +1,83 @@
+---
+title: "Get started"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{get_started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+The goal of this package is for easily applying same t-tests/basic data description across several sub-groups, with the output as a nice arranged `data.frame`. Multiple comparison and the significance symbols are also provided.
+
+This kind of analysis is commonly seen in ROI (Region-of-interest) analysis of brain imaging data. That's why the package is called `roistats`.
+
+```{r setup}
+library(roistats)
+```
+## Get some basic description about the data
+
+After data cleaning and wrangling, we yield a data.frame called `color_index`. This data.frame contains the neural analysis result of the degree of color memory sensitivity at each brain region of each subject. `color_index` has three columns: 
+
+* `subj_id`: identify the subjects. This labels the single data point within each `roi_id`.
+* `roi_id`: brain sub-region that of interest for the analysis. We are interested in eight brain regions.
+* `color_index`: the value that indicate how sensitive of a certain brain region to the memory of color. For each `subj_id` and `roi_id`, we obtained a single `color_index` value.
+
+```{r example}
+head(color_index)
+```
+
+Before we dive into the statistical test, we want to get `mean`, `sd`, and `se` (standard error of the mean) for the `color_index` at each brain region. `df_sem` function provided in the package can help us with this. 
+
+To use this function, you need to use `group_by` from `dplyr` to group your `data.frame` and obtain the desired sub-groups which you want to get the stats summary.
+
+Next step, specify the `data.frame` and the column's name of the variable which you want to the stats summary. In this case, the `data.frame` is called `color_index`, and the column is also called `color_index` (a confusing example, sorry).
+
+Note, the data.frame `color_index` was already grouped by `roi_id`. 
+
+```{r}
+str(color_index)
+
+df_sem(color_index, color_index) # first arg refers the data.frame; second arg refers the coloumn
+```
+
+You can also achieve this in a typical `tidyverse` pipeline.
+
+```{r}
+library(magrittr) # No need to import magrittr if you have imported tidyverse already
+color_index_summary <- color_index %>%
+  df_sem(color_index)
+
+knitr::kable(color_index_summary, digits = 3)
+```
+
+Yay! We have obtained the `SEM` (which is commonly used for error bar plotting in psych and cog neuro area) for each sub-group easily.
+
+## One-sample t-tests for all sub-groups
+
+Now, we want to test whether `color_index` is significantly against 0 for each sub-group (`roi_id`). That is, for each `roi_id` sub-group, we want to test whether the values of column `color_index` of the data.frame `color_index` is significantly different from `0`. Here, we have eight sub-groups, which means we will get eight one-sample t-test results in total. At a first step analysis to figure out which brain region would be interesting, we don't care much about the very detailed output from the `t.test` function provided by `{stats}` package. So, here we have this `t_test_one_sample` function that help us apply the same t-test on each sub-group, extract the key results, and wrap everything in a `data.frame`.
+
+Again, the data.frame `color_index` was already grouped by `roi_id`. 
+
+```{r}
+t_test_one_sample(color_index, "color_index", mu = 0)
+```
+
+Here, we see the t-values, dfs, ps, and bonferroni corrected ps! Nice, we get the t-stats for each brain region, and multiple comparison corrected p-values are even provided.
+
+However, I believe the bonferroni method is too conservative, and I want to compare the fdr method results with it. This time, we write things up in a `tidyverse` format again:
+
+```{r}
+color_index_one_sample_t_res <- color_index %>%
+  t_test_one_sample("color_index", mu = 0, p_adjust = c("bonferroni","fdr"))
+knitr::kable(color_index_one_sample_t_res, digits = 3)
+```
+
+## Significance symbols for a even clearer table and possible visulization
+
+Usally,

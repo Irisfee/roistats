@@ -1,4 +1,30 @@
-title: roistats
-template:
-  params:
-    bootswatch: lumen
+navbar:
+  structure:
+    left:
+    - home
+    - intro
+    - reference
+    - articles
+    - tutorials
+    - news
+    right: github
+  components:
+    home:
+      icon: fas fa-home fa-lg
+      href: index.html
+    intro:
+      text: Get started
+      href: articles/get_started.html
+    reference:
+      text: Reference
+      href: reference/index.html
+reference:
+- title: All functions
+  contents:
+  - '`color_index`'
+  - '`color_index_two_sample`'
+  - '`df_sem`'
+  - '`p_range`'
+  - '`t_test_one_sample`'
+  - '`t_test_two_sample`'
+

@@ -8,7 +8,6 @@
 #' consisting of characters. The columns that are always present are:
 #' \code{group variable(s)}, \code{mean}, \code{sd}, \code{n}, and \code{se}(SEM).
 #'
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -26,7 +25,7 @@ df_sem <- function(data, x) {
       sd = stats::sd(!!x, na.rm = T),
       n = dplyr::n()
     ) %>%
-    dplyr::mutate(se = sd / sqrt(n)) %>%
+    dplyr::mutate(se = .data$sd / sqrt(.data$n)) %>%
     dplyr::ungroup()
   names(df)[names(df) == "mean_x"] <- paste0("mean_", dplyr::as_label(x))
   return(df)

@@ -44,7 +44,22 @@
   </a>
 </li>
 <li>
+  <a href="articles/get_started.html">Get started</a>
+</li>
+<li>
   <a href="reference/index.html">Reference</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="articles/get_started.html">Get started</a>
+    </li>
+  </ul>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right"></ul>
@@ -64,7 +79,8 @@
 <a href="#roistats" class="anchor"></a>roistats</h1></div>
 <!-- badges: start -->
 
-<p>The goal of roistats is to …</p>
+<p>The this package is for easily applying same t-tests/basic data description across several sub-groups, with the output as a nice arranged <code>data.frame</code>. Multiple comparison and the significance symbols are also provided.</p>
+<p>This kind of analysis is commonly seen in ROI (Region-of-interest) analysis of brain imaging data. That’s why the package is called <code>roistats</code>.</p>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
@@ -75,28 +91,86 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># install.packages("devtools")</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">"Irisfee/roistats"</span><span class="op">)</span></code></pre></div>
-</div>
-<div id="example" class="section level2">
-<h2 class="hasAnchor">
-<a href="#example" class="anchor"></a>Example</h2>
-<p>This is a basic example which shows you how to solve a common problem:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div id="get-some-basic-description-about-the-data" class="section level3">
+<h3 class="hasAnchor">
+<a href="#get-some-basic-description-about-the-data" class="anchor"></a>Get some basic description about the data</h3>
+<p>After data cleaning and wrangling, we yield a data.frame called <code>color_index</code>. This data.frame contains the neural analysis result of the degree of color memory sensitivity at each brain region of each subject. <code>color_index</code> has three columns:</p>
+<ul>
+<li>
+<code>subj_id</code>: identify the subjects. This labels the single data point within each <code>roi_id</code>.</li>
+<li>
+<code>roi_id</code>: brain sub-region that of interest for the analysis. We are interested in eight brain regions.</li>
+<li>
+<code>color_index</code>: the value that indicate how sensitive of a certain brain region to the memory of color. For each <code>subj_id</code> and <code>roi_id</code>, we obtained a single <code>color_index</code> value.</li>
+</ul>
+<!-- end list --><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">roistats</span><span class="op">)</span>
-<span class="co">## basic example code</span></code></pre></div>
-<p>What is special about using <code>README.Rmd</code> instead of just <code>README.md</code>? You can include R chunks like so:</p>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">color_index</span><span class="op">)</span>
+<span class="co">#&gt;   subj_id  roi_id  color_index</span>
+<span class="co">#&gt; 1      01     AnG -0.032384500</span>
+<span class="co">#&gt; 2      01 dLatIPS -0.042524083</span>
+<span class="co">#&gt; 3      01      LO -0.032643250</span>
+<span class="co">#&gt; 4      01    pIPS -0.014760833</span>
+<span class="co">#&gt; 5      01      V1 -0.001259167</span>
+<span class="co">#&gt; 6      01    vIPS -0.023800500</span></code></pre></div>
+<p>Before we dive into the statistical test, we want to get <code>mean</code>, <code>sd</code>, and <code>se</code> (standard error of the mean) for the <code>color_index</code> at each brain region. <code>df_sem</code> function provided in the package can help us with this.</p>
+<p>To use this function, you need to use <code>group_by</code> from <code>dplyr</code> to group your <code>data.frame</code> and obtain the desired sub-groups which you want to get the stats summary.</p>
+<p>Next step, specify the <code>data.frame</code> and the column’s name of the variable which you want to the stats summary. In this case, the <code>data.frame</code> is called <code>color_index</code>, and the column is also called <code>color_index</code> (a confusing example, sorry).</p>
+<p>Note, the <code>color_index</code> was already grouped by <code>roi_id</code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">cars</span><span class="op">)</span>
-<span class="co">#&gt;      speed           dist       </span>
-<span class="co">#&gt;  Min.   : 4.0   Min.   :  2.00  </span>
-<span class="co">#&gt;  1st Qu.:12.0   1st Qu.: 26.00  </span>
-<span class="co">#&gt;  Median :15.0   Median : 36.00  </span>
-<span class="co">#&gt;  Mean   :15.4   Mean   : 42.98  </span>
-<span class="co">#&gt;  3rd Qu.:19.0   3rd Qu.: 56.00  </span>
-<span class="co">#&gt;  Max.   :25.0   Max.   :120.00</span></code></pre></div>
-<p>You’ll still need to render <code>README.Rmd</code> regularly, to keep <code>README.md</code> up-to-date. <code><a href="https://devtools.r-lib.org//reference/build_rmd.html">devtools::build_readme()</a></code> is handy for this. You could also use GitHub Actions to re-render <code>README.Rmd</code> every time you push. An example workflow can be found here: <a href="https://github.com/r-lib/actions/tree/master/examples" class="uri">https://github.com/r-lib/actions/tree/master/examples</a>.</p>
-<p>You can also embed plots, for example:</p>
-<p><img src="reference/figures/README-pressure-1.png" width="100%"></p>
-<p>In that case, don’t forget to commit and push the resulting figure files, so they display on GitHub and CRAN.</p>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">color_index</span><span class="op">)</span>
+<span class="co">#&gt; Classes 'grouped_df', 'tbl_df', 'tbl' and 'data.frame':  232 obs. of  3 variables:</span>
+<span class="co">#&gt;  $ subj_id    : chr  "01" "01" "01" "01" ...</span>
+<span class="co">#&gt;  $ roi_id     : chr  "AnG" "dLatIPS" "LO" "pIPS" ...</span>
+<span class="co">#&gt;  $ color_index: num  -0.03238 -0.04252 -0.03264 -0.01476 -0.00126 ...</span>
+<span class="co">#&gt;  - attr(*, "groups")=Classes 'tbl_df', 'tbl' and 'data.frame':   8 obs. of  2 variables:</span>
+<span class="co">#&gt;   ..$ roi_id: chr [1:8] "AnG" "dLatIPS" "LO" "pIPS" ...</span>
+<span class="co">#&gt;   ..$ .rows :List of 8</span>
+<span class="co">#&gt;   .. ..$ : int [1:29] 1 9 17 25 33 41 49 57 65 73 ...</span>
+<span class="co">#&gt;   .. ..$ : int [1:29] 2 10 18 26 34 42 50 58 66 74 ...</span>
+<span class="co">#&gt;   .. ..$ : int [1:29] 3 11 19 27 35 43 51 59 67 75 ...</span>
+<span class="co">#&gt;   .. ..$ : int [1:29] 4 12 20 28 36 44 52 60 68 76 ...</span>
+<span class="co">#&gt;   .. ..$ : int [1:29] 5 13 21 29 37 45 53 61 69 77 ...</span>
+<span class="co">#&gt;   .. ..$ : int [1:29] 6 14 22 30 38 46 54 62 70 78 ...</span>
+<span class="co">#&gt;   .. ..$ : int [1:29] 7 15 23 31 39 47 55 63 71 79 ...</span>
+<span class="co">#&gt;   .. ..$ : int [1:29] 8 16 24 32 40 48 56 64 72 80 ...</span>
+<span class="co">#&gt;   .. ..- attr(*, "ptype")= int(0) </span>
+<span class="co">#&gt;   .. ..- attr(*, "class")= chr [1:3] "vctrs_list_of" "vctrs_vctr" "list"</span>
+<span class="co">#&gt;   ..- attr(*, ".drop")= logi TRUE</span>
+
+<span class="fu"><a href="reference/df_sem.html">df_sem</a></span><span class="op">(</span><span class="va">color_index</span>, <span class="va">color_index</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 8 x 5</span>
+<span class="co">#&gt;   roi_id  mean_color_index     sd     n      se</span>
+<span class="co">#&gt;   &lt;chr&gt;              &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;</span>
+<span class="co">#&gt; 1 AnG              0.00537 0.0507    29 0.00942</span>
+<span class="co">#&gt; 2 dLatIPS          0.0159  0.0510    29 0.00946</span>
+<span class="co">#&gt; 3 LO               0.0181  0.0428    29 0.00796</span>
+<span class="co">#&gt; 4 pIPS             0.0102  0.0297    29 0.00552</span>
+<span class="co">#&gt; 5 V1               0.00955 0.0421    29 0.00782</span>
+<span class="co">#&gt; 6 vIPS             0.0162  0.0327    29 0.00607</span>
+<span class="co">#&gt; 7 vLatIPS          0.0162  0.0514    29 0.00955</span>
+<span class="co">#&gt; 8 VTC              0.00468 0.0218    29 0.00405</span></code></pre></div>
+<p>You can also achieve this in a typical <code>tidyverse</code> pipeline.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org">magrittr</a></span><span class="op">)</span>
+<span class="va">color_index</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="reference/df_sem.html">df_sem</a></span><span class="op">(</span><span class="va">color_index</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 8 x 5</span>
+<span class="co">#&gt;   roi_id  mean_color_index     sd     n      se</span>
+<span class="co">#&gt;   &lt;chr&gt;              &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;</span>
+<span class="co">#&gt; 1 AnG              0.00537 0.0507    29 0.00942</span>
+<span class="co">#&gt; 2 dLatIPS          0.0159  0.0510    29 0.00946</span>
+<span class="co">#&gt; 3 LO               0.0181  0.0428    29 0.00796</span>
+<span class="co">#&gt; 4 pIPS             0.0102  0.0297    29 0.00552</span>
+<span class="co">#&gt; 5 V1               0.00955 0.0421    29 0.00782</span>
+<span class="co">#&gt; 6 vIPS             0.0162  0.0327    29 0.00607</span>
+<span class="co">#&gt; 7 vLatIPS          0.0162  0.0514    29 0.00955</span>
+<span class="co">#&gt; 8 VTC              0.00468 0.0218    29 0.00405</span></code></pre></div>
+</div>
+<div id="one-sample-t-tests-for-all-sub-groups" class="section level3">
+<h3 class="hasAnchor">
+<a href="#one-sample-t-tests-for-all-sub-groups" class="anchor"></a>One-sample t-tests for all sub-groups</h3>
+</div>
 </div>
 </div>
   </div>
