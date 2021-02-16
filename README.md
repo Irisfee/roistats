@@ -37,6 +37,10 @@ devtools::install_github("Irisfee/roistats")
 
 ## Usage
 
+**See [Get
+Started](https://irisfee.github.io/roistats/articles/get_started.html)
+page for detailed usage**
+
 ### Get some basic description about the data
 
 ``` r
