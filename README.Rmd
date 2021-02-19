@@ -20,9 +20,9 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/Irisfee/roistats/branch/main/graph/badge.svg)](https://codecov.io/gh/Irisfee/roistats?branch=main)
 <!-- badges: end -->
 
-The goal of this package is for easily applying same t-tests/basic data description across several sub-groups, with the output as a nice arranged `data.frame` instead of the detailed listed information. Multiple comparison and the significance symbols are also provided.
+The goal of this package is to apply t-tests and basic data description across several sub-groups, with the output being a nice arranged `data.frame` instead of detailed listed information. Multiple comparison and significance symbols are wrapped in as options. 
 
-This kind of analysis is commonly seen in ROI (Region-of-interest) analysis of brain imaging data. That's why the package is called `roistats`.
+This kind of analyses are commonly seen in ROI (Region-of-interest) analyses for brain imaging data and this is why the package is called `roistats`.
 
 ## Installation
 
