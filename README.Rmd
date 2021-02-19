@@ -46,8 +46,6 @@ devtools::install_github("Irisfee/roistats")
 ### Get some basic description about the data
 ```{r setup}
 library(roistats)
-str(color_index)
-head(color_index)
 df_sem(color_index, color_index) 
 ```
 

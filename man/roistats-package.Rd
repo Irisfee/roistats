@@ -6,7 +6,15 @@
 \alias{roistats-package}
 \title{roistats: What the Package Does (One Line, Title Case)}
 \description{
-What the package does (one paragraph).
+The goal of this package is for easily applying same t-tests/basic data description across several sub-groups, with the output as a nice arranged data.frame. Multiple comparison and the significance symbols are also provided.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/Irisfee/roistats}
+  \item Report bugs at \url{https://github.com/Irisfee/roistats/issues}
+}
+
 }
 \author{
 \strong{Maintainer}: Yufei Zhao \email{fay.zz0213@gmail.com} (\href{https://orcid.org/0000-0002-6511-8507}{ORCID})
