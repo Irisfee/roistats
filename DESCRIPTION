@@ -1,5 +1,5 @@
 Package: roistats
-Title: What the Package Does (One Line, Title Case)
+Title: Convienience functions for applying basic stats to sub-groups
 Version: 0.1.0.9000
 Authors@R: 
     person(given = "Yufei",

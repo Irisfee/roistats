@@ -12,6 +12,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 The goal of this package is for easily applying same t-tests/basic data description across several sub-groups, with the output as a nice arranged `data.frame`. Multiple comparison and the significance symbols are also provided.
 

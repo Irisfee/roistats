@@ -4,7 +4,7 @@
 \name{roistats-package}
 \alias{roistats}
 \alias{roistats-package}
-\title{roistats: What the Package Does (One Line, Title Case)}
+\title{roistats: Convienience functions for applying basic stats to sub-groups}
 \description{
 The goal of this package is for easily applying same t-tests/basic data description across several sub-groups, with the output as a nice arranged data.frame. Multiple comparison and the significance symbols are also provided.
 }
