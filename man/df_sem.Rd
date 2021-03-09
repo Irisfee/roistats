@@ -7,10 +7,10 @@
 df_sem(data, x)
 }
 \arguments{
-\item{data}{A grouped data frame. It should be grouped by the intended sub-groups which you want to do the
+\item{data}{A data frame, generally grouped by the intended sub-groups which you want to compare for the
 same t-test.}
 
-\item{x}{Column name of the variable which you want to get the mean, sd, and standard error of the mean (SEM).}
+\item{x}{A (bare) column name of the variable which you want to get the mean, sd, and standard error of the mean (SEM).}
 }
 \value{
 A \code{data.frame} with

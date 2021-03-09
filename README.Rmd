@@ -18,6 +18,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/Irisfee/roistats/workflows/R-CMD-check/badge.svg)](https://github.com/Irisfee/roistats/actions)
 [![Codecov test coverage](https://codecov.io/gh/Irisfee/roistats/branch/main/graph/badge.svg)](https://codecov.io/gh/Irisfee/roistats?branch=main)
+[![CRAN status](https://www.r-pkg.org/badges/version/roistats)](https://CRAN.R-project.org/package=roistats)
 <!-- badges: end -->
 
 The goal of this package is to apply t-tests and basic data description across several sub-groups, with the output being a nice arranged `data.frame` instead of detailed listed information. Multiple comparison and significance symbols are wrapped in as options. 
@@ -43,30 +44,38 @@ devtools::install_github("Irisfee/roistats")
 
 **See [Get Started](https://irisfee.github.io/roistats/articles/get_started.html) page for detailed usage**
 
-### Get some basic description about the data
+### Get some basic description about the data by brain region
 ```{r setup}
 library(roistats)
-df_sem(color_index, color_index) 
+library(dplyr)
+color_index %>% 
+  group_by(roi_id) %>%   
+  df_sem(color_index) 
 ```
 
 ### One-sample t-tests for all sub-groups
 
 ```{r}
-t_test_one_sample(color_index, "color_index", mu = 0)
+color_index %>% 
+  group_by(roi_id) %>% 
+  t_test_one_sample(color_index)
 ```
 
 ### With significance symbol as output
 
 ```{r, message = FALSE}
-library(dplyr)
 color_index_one_sample_t_with_sig <- color_index %>% 
-  t_test_one_sample("color_index", mu = 0, p_adjust = c("bonferroni","fdr")) %>% 
+  group_by(roi_id) %>% 
+  t_test_one_sample(color_index, p_adjust = c("bonferroni","fdr")) %>% 
   mutate(sig_origin_p = p_range(p))
+  
 knitr::kable(color_index_one_sample_t_with_sig, digits = 3)
 ```
 
 ### Two-sample t-tests for all sub-groups
 
 ```{r}
-t_test_two_sample(color_index_two_sample, x = "color_effect", y = "group", paired = TRUE)
+color_index_two_sample %>% 
+  group_by(roi_id) %>% 
+  t_test_two_sample(x = color_effect, y = group, paired = TRUE)
 ```
