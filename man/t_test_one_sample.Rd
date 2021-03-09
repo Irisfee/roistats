@@ -4,7 +4,7 @@
 \alias{t_test_one_sample}
 \title{Generate one-sample t-test results for multiple sub-groups}
 \usage{
-t_test_one_sample(data, x, mu, p_adjust = "bonferroni")
+t_test_one_sample(data, x, mu = 0, p_adjust = "bonferroni")
 }
 \arguments{
 \item{data}{A grouped data frame. It should be grouped by the intended sub-groups which you want to do the

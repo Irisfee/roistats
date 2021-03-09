@@ -1,8 +1,8 @@
 #' Generate standard error of mean
 #'
-#' @param data A grouped data frame. It should be grouped by the intended sub-groups which you want to do the
+#' @param data A data frame, generally grouped by the intended sub-groups which you want to compare for the
 #' same t-test.
-#' @param x Column name of the variable which you want to get the mean, sd, and standard error of the mean (SEM).
+#' @param x A (bare) column name of the variable which you want to get the mean, sd, and standard error of the mean (SEM).
 #'
 #' @return A \code{data.frame} with
 #' consisting of characters. The columns that are always present are:
@@ -17,16 +17,23 @@
 #' color_index %>%
 #'   df_sem(color_index)
 df_sem <- function(data, x) {
-  if (!dplyr::is.grouped_df(data)) stop("Data must be a grouped data frame.")
-  x <- dplyr::enquo(x)
+  if (!is.grouped_df(data)) {
+    warning("The `df_sem()` function expects a grouped data frame (i.e., from `dplyr::group_by()`). Returning the overall mean, sd, n and se.",
+            call. = FALSE)
+  }
+
+  x <- enquo(x)
   df <- data %>%
-    dplyr::summarise(
+    summarise(
       mean_x = mean(!!x, na.rm = T),
-      sd = stats::sd(!!x, na.rm = T),
-      n = dplyr::n()
+      sd = sd(!!x, na.rm = T),
+      n = n()
     ) %>%
-    dplyr::mutate(se = .data$sd / sqrt(.data$n)) %>%
-    dplyr::ungroup()
-  names(df)[names(df) == "mean_x"] <- paste0("mean_", dplyr::as_label(x))
-  return(df)
+    mutate(se = .data$sd / sqrt(.data$n)) %>%
+    ungroup()
+
+  names(df)[names(df) == "mean_x"] <- paste0("mean_", as_label(x))
+
+  df
 }
+

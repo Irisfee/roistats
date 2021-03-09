@@ -14,82 +14,86 @@ knitr::opts_chunk$set(
 )
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
-The goal of this package is for easily applying same t-tests/basic data description across several sub-groups, with the output as a nice arranged `data.frame`. Multiple comparison and the significance symbols are also provided.
+The goal of this package is to easily apply the same t-tests/basic data description across several sub-groups, with the output provided as a nice arranged `data.frame`. Multiple comparison and $p$-value significance symbols are also provided.
 
-This kind of analysis is commonly seen in ROI (Region-of-interest) analysis of brain imaging data. That's why the package is called `roistats`.
+This kind of analysis is commonly seen in ROI (Region-of-interest) analysis of brain imaging data (hence the name of the package, **roistats**).
 
 ```{r setup}
 library(roistats)
 ```
 ## Get some basic description about the data
 
-After data cleaning and wrangling, we yield a data.frame called `color_index`. This data.frame contains the neural analysis result of the degree of color memory sensitivity at each brain region of each subject. `color_index` has three columns: 
+The package comes with a data.frame called `color_index`, which is similar in format to what we might get after cleaning and wrangling ROI data. This data.frame contains the neural analysis result of the degree of *color memory sensitivity* at each brain region of each subject. The `color_index` data frame has three columns: 
 
-* `subj_id`: identify the subjects. This labels the single data point within each `roi_id`.
-* `roi_id`: brain sub-region that of interest for the analysis. We are interested in eight brain regions.
-* `color_index`: the value that indicate how sensitive of a certain brain region to the memory of color. For each `subj_id` and `roi_id`, we obtained a single `color_index` value.
+* `subj_id`: identifies the subjects in the study. 
+* `roi_id`: identifies the brain sub-region of interest for the analysis. We are interested in eight brain regions. Note that the combination of `subj_id` and `roi_id` uniquely identifies rows in the dataset.
+* `color_index`: indicates how sensitive a certain brain region is to the memory of color for each subject/brain region combination. 
 
 ```{r example}
 head(color_index)
 ```
 
-Before we dive into the statistical test, we want to get `mean`, `sd`, and `se` (standard error of the mean) for the `color_index` at each brain region. `df_sem` function provided in the package can help us with this. 
+Before we dive into the statistical test, we likely want to get descriptive statistics for `color_index`, including the mean, standard deviation, and standard error of the mean for each brain region. The `df_sem` function help us with this, and is designed to be used in combination with [**dplyr**](https://dplyr.tidyverse.org), specifically `dplyr::group_by()`. To obtain our descriptive statistics by `roi_id`, we just first group the data frame by `roi_id`, then pass the data frame to `def_sem()`. 
 
-To use this function, you need to use `group_by` from `dplyr` to group your `data.frame` and obtain the desired sub-groups which you want to get the stats summary.
+```{r message = FALSE}
+library(dplyr)
 
-Next step, specify the `data.frame` and the column's name of the variable which you want to the stats summary. In this case, the `data.frame` is called `color_index`, and the column is also called `color_index` (a confusing example, sorry).
-
-Note, the data.frame `color_index` was already grouped by `roi_id`. 
-
-```{r}
-str(color_index)
-
-df_sem(color_index, color_index) # first arg refers the data.frame; second arg refers the coloumn
-```
-
-You can also achieve this in a typical `tidyverse` pipeline.
-
-```{r}
-library(magrittr) # No need to import magrittr if you have imported tidyverse already
-color_index_summary <- color_index %>%
-  df_sem(color_index)
-
-knitr::kable(color_index_summary, digits = 3)
+color_index %>%
+  group_by(roi_id) %>% # The column to get summaries by
+  df_sem(color_index) # The column to summarize
 ```
 
 Yay! We have obtained the `SEM` (which is commonly used for error bar plotting in psych and cog neuro area) for each sub-group easily.
 
-## One-sample t-tests for all sub-groups
 
-Now, we want to test whether `color_index` is significantly against 0 for each sub-group (`roi_id`). That is, for each `roi_id` sub-group, we want to test whether the values of column `color_index` of the data.frame `color_index` is significantly different from `0`. Here, we have eight sub-groups, which means we will get eight one-sample t-test results in total. At a first step analysis to figure out which brain region would be interesting, we don't care much about the very detailed output from the `t.test` function provided by `{stats}` package. So, here we have this `t_test_one_sample` function that help us apply the same t-test to each sub-group, extract the key results, and wrap everything in a `data.frame`.
+Note that if we do not use `dplyr::group_by()` we just get the overall summaries. The package reports a warning when this happens because it generally goes against the intent of the package (computing multiple comparisons).
 
-Again, the data.frame `color_index` was already grouped by `roi_id`. 
-
-```{r}
-t_test_one_sample(color_index, "color_index", mu = 0)
+```{r warning = TRUE}
+df_sem(data = color_index, x = color_index)
 ```
 
-Here, we see the t-values, dfs, ps, and bonferroni corrected ps! Nice, we get the t-stats for each brain region, and multiple comparison corrected p-values are even provided.
 
-However, I believe the bonferroni method is too conservative, and I want to compare the fdr method results with it. This time, we write things up in a `tidyverse` format again:
+## One-sample t-tests for all sub-groups
+
+Now suppose we want to test whether `color_index` is *significantly* different (i.e., significantly different than zero) for each possible sub-group (`roi_id`). Note that we are not computing pairwise comparisons yet, just whether the mean for each subgroup is different from zero. Here, we have eight sub-groups, which means we will get eight one-sample t-test results in total. As a first step in the analysis we probably don't care much about all the detailed output from `stats::t.test`. Instead, we're just looking for mean difference and significance. This is what the `t_test_one_sample` function was designed to accommodate. We again pass the function a grouped data frame, and we get $t$-test results back for each group. 
+
+By default, a Bonferroni $p$-value adjustment is applied, but any adjustment available through `stats::p.adjust()` can be supplied. Similarly, each mean is compared to zero by default, but this can be adjusted through the optional `mu` argument. The interface for the function works essentially equivalanetly to `df_sem()`. 
+
+```{r}
+color_index %>% 
+  group_by(roi_id) %>% 
+  t_test_one_sample(color_index)
+```
+
+Here, we see the t-values, degrees of freedom, as well as the uncorrected and bonferroni corrected $p$-values! Nice! Note that the multiple comparison corrected $p$-values are provided by the `p_bonferroni` column, but the name of this column will change depending on the method you want to use. Let's try again, but this time using both the Bonferroni and the [Benjamini and Hochberg (1995)](https://www.jstor.org/stable/2346101?seq=1#metadata_info_tab_contents) method. We'll put this in a nice table as well.
 
 ```{r}
 color_index_one_sample_t_res <- color_index %>%
-  t_test_one_sample("color_index", mu = 0, p_adjust = c("bonferroni","fdr"))
+  group_by(roi_id) %>% 
+  t_test_one_sample(color_index, p_adjust = c("bonferroni", "BH"))
+
 knitr::kable(color_index_one_sample_t_res, digits = 3)
 ```
 
-## Significance symbols for a even clearer table and possible visulization
+As before, if we our data frame is not grouped, we'll get the stats returned, but with a warning.
 
-Usually, we want the significance symbol to highlight the result table or the plot. Here we have the `p_range`
+```{r }
+color_index %>% 
+  t_test_one_sample(color_index)
+```
+
+## Significance symbols for an even clearer table and possible visulization
+
+Usually, we want the significance symbol to highlight the result in a table or plot. Here we have the `p_range`
 function to create the significance symbol:
 
 ```{r, message = FALSE}
-library(dplyr)
 color_index_one_sample_t_with_sig <- color_index_one_sample_t_res %>% 
   mutate(sig_origin_p = p_range(p))
+
 knitr::kable(color_index_one_sample_t_with_sig, digits = 3)
 ```
+
 You can use `p_range` for a single number too:
 
 ```{r}
@@ -98,34 +102,16 @@ p_range(0.002)
 
 ## Two-sample t-tests for all sub-groups
 
-`t_test_two_sample` is for applying two-sample t-tests to all sub-groups.
-
-Here we have `color_index_two_sample`:
-* `subj_id`: identify the subjects. This labels the single data point within each `roi_id`.
-* `roi_id`: brain sub-region that of interest for the analysis. We are interested in eight brain regions.
-* `group`: whether the test was `Paired` condition or `Control` condition.
-* `color_effect`: the value that indicate the memory trace of color. For each `subj_id` at each with each test condition `group` at each brain region`roi_id`, we obtained a single `color_effect` value.
-
-Note, the data.frame was already grouped by `roi_id`. 
+The `t_test_two_sample` function is used for applying two-sample t-tests to all sub-groups. This dataset has all the same columns as `color_index`, but also includes a `group` column specifying the condition of the experiement (paired versus control).
 
 ```{r}
 head(color_index_two_sample)
-str(color_index_two_sample)
 ```
 
-Here is the example of how to obtain the paired t-test for each sub-group:
+We can obtain paired t-test for each sub-group using a similar approach as before. Here we're including the additional `paired = TRUE` argument to specify we want a paired $t$-test. This argument defaults to `FALSE`.
 
 ```{r}
-t_test_two_sample(color_index_two_sample, x = "color_effect", y = "group", paired = TRUE)
+color_index_two_sample %>% 
+  group_by(roi_id) %>% 
+  t_test_two_sample(color_effect, group, paired = TRUE)
 ```
-
-Can be integrated into `tidyverse` pipeline too.
-
-```{r}
-color_index_two_sample_t_res <- color_index_two_sample %>%
-  t_test_two_sample(
-    x = "color_effect", y = "group", paired = TRUE, p_adjust = c("bonferroni","fdr")
-  )
-knitr::kable(color_index_two_sample_t_res, digits = 3)
-```
-

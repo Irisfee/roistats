@@ -8,6 +8,8 @@
 [![R-CMD-check](https://github.com/Irisfee/roistats/workflows/R-CMD-check/badge.svg)](https://github.com/Irisfee/roistats/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/Irisfee/roistats/branch/main/graph/badge.svg)](https://codecov.io/gh/Irisfee/roistats?branch=main)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/roistats)](https://CRAN.R-project.org/package=roistats)
 <!-- badges: end -->
 
 The goal of this package is to apply t-tests and basic data description
@@ -41,49 +43,63 @@ devtools::install_github("Irisfee/roistats")
 Started](https://irisfee.github.io/roistats/articles/get_started.html)
 page for detailed usage**
 
-### Get some basic description about the data
+### Get some basic description about the data by brain region
 
 ``` r
 library(roistats)
-df_sem(color_index, color_index) 
+library(dplyr)
+#> 
+#> Attaching package: 'dplyr'
+#> The following objects are masked from 'package:stats':
+#> 
+#>     filter, lag
+#> The following objects are masked from 'package:base':
+#> 
+#>     intersect, setdiff, setequal, union
+color_index %>% 
+  group_by(roi_id) %>%   
+  df_sem(color_index) 
 #> # A tibble: 8 x 5
-#>   roi_id  mean_color_index     sd     n      se
-#>   <chr>              <dbl>  <dbl> <int>   <dbl>
-#> 1 AnG              0.00537 0.0507    29 0.00942
-#> 2 dLatIPS          0.0159  0.0510    29 0.00946
-#> 3 LO               0.0181  0.0428    29 0.00796
-#> 4 pIPS             0.0102  0.0297    29 0.00552
-#> 5 V1               0.00955 0.0421    29 0.00782
-#> 6 vIPS             0.0162  0.0327    29 0.00607
-#> 7 vLatIPS          0.0162  0.0514    29 0.00955
-#> 8 VTC              0.00468 0.0218    29 0.00405
+#>   roi_id  mean_color_index         sd     n          se
+#>   <chr>              <dbl>      <dbl> <int>       <dbl>
+#> 1 AnG          0.005370652 0.05071557    29 0.009417644
+#> 2 dLatIPS      0.01588446  0.05096974    29 0.009464843
+#> 3 LO           0.01806413  0.04284959    29 0.007956968
+#> 4 pIPS         0.01019600  0.02971026    29 0.005517056
+#> 5 V1           0.009550089 0.04211448    29 0.007820463
+#> 6 vIPS         0.01623826  0.03271157    29 0.006074385
+#> 7 vLatIPS      0.01617011  0.05141337    29 0.009547223
+#> 8 VTC          0.004683526 0.02181639    29 0.004051201
 ```
 
 ### One-sample t-tests for all sub-groups
 
 ``` r
-t_test_one_sample(color_index, "color_index", mu = 0)
+color_index %>% 
+  group_by(roi_id) %>% 
+  t_test_one_sample(color_index)
 #> # A tibble: 8 x 5
 #> # Groups:   roi_id [8]
-#>   roi_id  tvalue    df      p p_bonferroni
-#>   <chr>    <dbl> <dbl>  <dbl>        <dbl>
-#> 1 AnG      0.570    28 0.573        1     
-#> 2 dLatIPS  1.68     28 0.104        0.835 
-#> 3 LO       2.27     28 0.0311       0.249 
-#> 4 pIPS     1.85     28 0.0752       0.601 
-#> 5 V1       1.22     28 0.232        1     
-#> 6 vIPS     2.67     28 0.0124       0.0991
-#> 7 vLatIPS  1.69     28 0.101        0.811 
-#> 8 VTC      1.16     28 0.257        1
+#>   roi_id     tvalue    df          p p_bonferroni
+#>   <chr>       <dbl> <dbl>      <dbl>        <dbl>
+#> 1 AnG     0.5702755    28 0.5730390    1         
+#> 2 dLatIPS 1.678259     28 0.1044252    0.8354017 
+#> 3 LO      2.270227     28 0.03108491   0.2486792 
+#> 4 pIPS    1.848088     28 0.07517831   0.6014264 
+#> 5 V1      1.221167     28 0.2322062    1         
+#> 6 vIPS    2.673234     28 0.01238958   0.09911667
+#> 7 vLatIPS 1.693697     28 0.1014206    0.8113652 
+#> 8 VTC     1.156083     28 0.2574165    1
 ```
 
 ### With significance symbol as output
 
 ``` r
-library(dplyr)
 color_index_one_sample_t_with_sig <- color_index %>% 
-  t_test_one_sample("color_index", mu = 0, p_adjust = c("bonferroni","fdr")) %>% 
+  group_by(roi_id) %>% 
+  t_test_one_sample(color_index, p_adjust = c("bonferroni","fdr")) %>% 
   mutate(sig_origin_p = p_range(p))
+  
 knitr::kable(color_index_one_sample_t_with_sig, digits = 3)
 ```
 
@@ -101,17 +117,19 @@ knitr::kable(color_index_one_sample_t_with_sig, digits = 3)
 ### Two-sample t-tests for all sub-groups
 
 ``` r
-t_test_two_sample(color_index_two_sample, x = "color_effect", y = "group", paired = TRUE)
+color_index_two_sample %>% 
+  group_by(roi_id) %>% 
+  t_test_two_sample(x = color_effect, y = group, paired = TRUE)
 #> # A tibble: 8 x 5
 #> # Groups:   roi_id [8]
-#>   roi_id  tvalue    df      p p_bonferroni
-#>   <chr>    <dbl> <dbl>  <dbl>        <dbl>
-#> 1 AnG      0.570    28 0.573        1     
-#> 2 dLatIPS  1.68     28 0.104        0.835 
-#> 3 LO       2.27     28 0.0311       0.249 
-#> 4 pIPS     1.85     28 0.0752       0.601 
-#> 5 V1       1.22     28 0.232        1     
-#> 6 vIPS     2.67     28 0.0124       0.0991
-#> 7 vLatIPS  1.69     28 0.101        0.811 
-#> 8 VTC      1.16     28 0.257        1
+#>   roi_id     tvalue    df          p p_bonferroni
+#>   <chr>       <dbl> <dbl>      <dbl>        <dbl>
+#> 1 AnG     0.5702755    28 0.5730390    1         
+#> 2 dLatIPS 1.678259     28 0.1044252    0.8354017 
+#> 3 LO      2.270227     28 0.03108491   0.2486792 
+#> 4 pIPS    1.848088     28 0.07517831   0.6014264 
+#> 5 V1      1.221167     28 0.2322062    1         
+#> 6 vIPS    2.673234     28 0.01238958   0.09911667
+#> 7 vLatIPS 1.693697     28 0.1014206    0.8113652 
+#> 8 VTC     1.156083     28 0.2574165    1
 ```
