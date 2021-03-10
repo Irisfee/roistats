@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">roistats</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.1</span>
       </span>
     </div>
 
@@ -93,57 +93,40 @@
 
     
     
-<p>The goal of this package is for easily applying same t-tests/basic data description across several sub-groups, with the output as a nice arranged <code>data.frame</code>. Multiple comparison and the significance symbols are also provided.</p>
-<p>This kind of analysis is commonly seen in ROI (Region-of-interest) analysis of brain imaging data. That’s why the package is called <code>roistats</code>.</p>
+<p>The goal of this package is to easily apply the same t-tests/basic data description across several sub-groups, with the output provided as a nice arranged <code>data.frame</code>. Multiple comparison and <span class="math inline">\(p\)</span>-value significance symbols are also provided.</p>
+<p>This kind of analysis is commonly seen in ROI (Region-of-interest) analysis of brain imaging data (hence the name of the package, <strong>roistats</strong>).</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/Irisfee/roistats">roistats</a></span><span class="op">)</span></code></pre></div>
 <div id="get-some-basic-description-about-the-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#get-some-basic-description-about-the-data" class="anchor"></a>Get some basic description about the data</h2>
-<p>After data cleaning and wrangling, we yield a data.frame called <code>color_index</code>. This data.frame contains the neural analysis result of the degree of color memory sensitivity at each brain region of each subject. <code>color_index</code> has three columns:</p>
+<p>The package comes with a data.frame called <code>color_index</code>, which is similar in format to what we might get after cleaning and wrangling ROI data. This data.frame contains the neural analysis result of the degree of <em>color memory sensitivity</em> at each brain region of each subject. The <code>color_index</code> data frame has three columns:</p>
 <ul>
 <li>
-<code>subj_id</code>: identify the subjects. This labels the single data point within each <code>roi_id</code>.</li>
+<code>subj_id</code>: identifies the subjects in the study.</li>
 <li>
-<code>roi_id</code>: brain sub-region that of interest for the analysis. We are interested in eight brain regions.</li>
+<code>roi_id</code>: identifies the brain sub-region of interest for the analysis. We are interested in eight brain regions. Note that the combination of <code>subj_id</code> and <code>roi_id</code> uniquely identifies rows in the dataset.</li>
 <li>
-<code>color_index</code>: the value that indicate how sensitive of a certain brain region to the memory of color. For each <code>subj_id</code> and <code>roi_id</code>, we obtained a single <code>color_index</code> value.</li>
+<code>color_index</code>: indicates how sensitive a certain brain region is to the memory of color for each subject/brain region combination.</li>
 </ul>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">color_index</span><span class="op">)</span>
-<span class="co">#&gt;   subj_id  roi_id  color_index</span>
-<span class="co">#&gt; 1      01     AnG -0.032384500</span>
-<span class="co">#&gt; 2      01 dLatIPS -0.042524083</span>
-<span class="co">#&gt; 3      01      LO -0.032643250</span>
-<span class="co">#&gt; 4      01    pIPS -0.014760833</span>
-<span class="co">#&gt; 5      01      V1 -0.001259167</span>
-<span class="co">#&gt; 6      01    vIPS -0.023800500</span></code></pre></div>
-<p>Before we dive into the statistical test, we want to get <code>mean</code>, <code>sd</code>, and <code>se</code> (standard error of the mean) for the <code>color_index</code> at each brain region. <code>df_sem</code> function provided in the package can help us with this.</p>
-<p>To use this function, you need to use <code>group_by</code> from <code>dplyr</code> to group your <code>data.frame</code> and obtain the desired sub-groups which you want to get the stats summary.</p>
-<p>Next step, specify the <code>data.frame</code> and the column’s name of the variable which you want to the stats summary. In this case, the <code>data.frame</code> is called <code>color_index</code>, and the column is also called <code>color_index</code> (a confusing example, sorry).</p>
-<p>Note, the data.frame <code>color_index</code> was already grouped by <code>roi_id</code>.</p>
+<span class="co">#&gt; # A tibble: 6 x 3</span>
+<span class="co">#&gt;   subj_id roi_id  color_index</span>
+<span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;         &lt;dbl&gt;</span>
+<span class="co">#&gt; 1 01      AnG        -0.0324 </span>
+<span class="co">#&gt; 2 01      dLatIPS    -0.0425 </span>
+<span class="co">#&gt; 3 01      LO         -0.0326 </span>
+<span class="co">#&gt; 4 01      pIPS       -0.0148 </span>
+<span class="co">#&gt; 5 01      V1         -0.00126</span>
+<span class="co">#&gt; 6 01      vIPS       -0.0238</span></code></pre></div>
+<p>Before we dive into the statistical test, we likely want to get descriptive statistics for <code>color_index</code>, including the mean, standard deviation, and standard error of the mean for each brain region. The <code>df_sem</code> function help us with this, and is designed to be used in combination with <a href="https://dplyr.tidyverse.org"><strong>dplyr</strong></a>, specifically <code><a href="https://dplyr.tidyverse.org/reference/group_by.html">dplyr::group_by()</a></code>. To obtain our descriptive statistics by <code>roi_id</code>, we just first group the data frame by <code>roi_id</code>, then pass the data frame to <code>def_sem()</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">color_index</span><span class="op">)</span>
-<span class="co">#&gt; Classes 'grouped_df', 'tbl_df', 'tbl' and 'data.frame':  232 obs. of  3 variables:</span>
-<span class="co">#&gt;  $ subj_id    : chr  "01" "01" "01" "01" ...</span>
-<span class="co">#&gt;  $ roi_id     : chr  "AnG" "dLatIPS" "LO" "pIPS" ...</span>
-<span class="co">#&gt;  $ color_index: num  -0.03238 -0.04252 -0.03264 -0.01476 -0.00126 ...</span>
-<span class="co">#&gt;  - attr(*, "groups")=Classes 'tbl_df', 'tbl' and 'data.frame':   8 obs. of  2 variables:</span>
-<span class="co">#&gt;   ..$ roi_id: chr [1:8] "AnG" "dLatIPS" "LO" "pIPS" ...</span>
-<span class="co">#&gt;   ..$ .rows :List of 8</span>
-<span class="co">#&gt;   .. ..$ : int [1:29] 1 9 17 25 33 41 49 57 65 73 ...</span>
-<span class="co">#&gt;   .. ..$ : int [1:29] 2 10 18 26 34 42 50 58 66 74 ...</span>
-<span class="co">#&gt;   .. ..$ : int [1:29] 3 11 19 27 35 43 51 59 67 75 ...</span>
-<span class="co">#&gt;   .. ..$ : int [1:29] 4 12 20 28 36 44 52 60 68 76 ...</span>
-<span class="co">#&gt;   .. ..$ : int [1:29] 5 13 21 29 37 45 53 61 69 77 ...</span>
-<span class="co">#&gt;   .. ..$ : int [1:29] 6 14 22 30 38 46 54 62 70 78 ...</span>
-<span class="co">#&gt;   .. ..$ : int [1:29] 7 15 23 31 39 47 55 63 71 79 ...</span>
-<span class="co">#&gt;   .. ..$ : int [1:29] 8 16 24 32 40 48 56 64 72 80 ...</span>
-<span class="co">#&gt;   .. ..- attr(*, "ptype")= int(0) </span>
-<span class="co">#&gt;   .. ..- attr(*, "class")= chr [1:3] "vctrs_list_of" "vctrs_vctr" "list"</span>
-<span class="co">#&gt;   ..- attr(*, ".drop")= logi TRUE</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span>
 
-<span class="fu"><a href="../reference/df_sem.html">df_sem</a></span><span class="op">(</span><span class="va">color_index</span>, <span class="va">color_index</span><span class="op">)</span> <span class="co"># first arg refers the data.frame; second arg refers the coloumn</span>
+<span class="va">color_index</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">roi_id</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="co"># The column to get summaries by</span>
+  <span class="fu"><a href="../reference/df_sem.html">df_sem</a></span><span class="op">(</span><span class="va">color_index</span><span class="op">)</span> <span class="co"># The column to summarize</span>
 <span class="co">#&gt; # A tibble: 8 x 5</span>
 <span class="co">#&gt;   roi_id  mean_color_index     sd     n      se</span>
 <span class="co">#&gt;   &lt;chr&gt;              &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;</span>
@@ -155,89 +138,26 @@
 <span class="co">#&gt; 6 vIPS             0.0162  0.0327    29 0.00607</span>
 <span class="co">#&gt; 7 vLatIPS          0.0162  0.0514    29 0.00955</span>
 <span class="co">#&gt; 8 VTC              0.00468 0.0218    29 0.00405</span></code></pre></div>
-<p>You can also achieve this in a typical <code>tidyverse</code> pipeline.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org">magrittr</a></span><span class="op">)</span> <span class="co"># No need to import magrittr if you have imported tidyverse already</span>
-<span class="va">color_index_summary</span> <span class="op">&lt;-</span> <span class="va">color_index</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="../reference/df_sem.html">df_sem</a></span><span class="op">(</span><span class="va">color_index</span><span class="op">)</span>
-
-<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">color_index_summary</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="left">roi_id</th>
-<th align="right">mean_color_index</th>
-<th align="right">sd</th>
-<th align="right">n</th>
-<th align="right">se</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">AnG</td>
-<td align="right">0.005</td>
-<td align="right">0.051</td>
-<td align="right">29</td>
-<td align="right">0.009</td>
-</tr>
-<tr class="even">
-<td align="left">dLatIPS</td>
-<td align="right">0.016</td>
-<td align="right">0.051</td>
-<td align="right">29</td>
-<td align="right">0.009</td>
-</tr>
-<tr class="odd">
-<td align="left">LO</td>
-<td align="right">0.018</td>
-<td align="right">0.043</td>
-<td align="right">29</td>
-<td align="right">0.008</td>
-</tr>
-<tr class="even">
-<td align="left">pIPS</td>
-<td align="right">0.010</td>
-<td align="right">0.030</td>
-<td align="right">29</td>
-<td align="right">0.006</td>
-</tr>
-<tr class="odd">
-<td align="left">V1</td>
-<td align="right">0.010</td>
-<td align="right">0.042</td>
-<td align="right">29</td>
-<td align="right">0.008</td>
-</tr>
-<tr class="even">
-<td align="left">vIPS</td>
-<td align="right">0.016</td>
-<td align="right">0.033</td>
-<td align="right">29</td>
-<td align="right">0.006</td>
-</tr>
-<tr class="odd">
-<td align="left">vLatIPS</td>
-<td align="right">0.016</td>
-<td align="right">0.051</td>
-<td align="right">29</td>
-<td align="right">0.010</td>
-</tr>
-<tr class="even">
-<td align="left">VTC</td>
-<td align="right">0.005</td>
-<td align="right">0.022</td>
-<td align="right">29</td>
-<td align="right">0.004</td>
-</tr>
-</tbody>
-</table>
 <p>Yay! We have obtained the <code>SEM</code> (which is commonly used for error bar plotting in psych and cog neuro area) for each sub-group easily.</p>
+<p>Note that if we do not use <code><a href="https://dplyr.tidyverse.org/reference/group_by.html">dplyr::group_by()</a></code> we just get the overall summaries. The package reports a warning when this happens because it generally goes against the intent of the package (computing multiple comparisons).</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/df_sem.html">df_sem</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">color_index</span>, x <span class="op">=</span> <span class="va">color_index</span><span class="op">)</span>
+<span class="co">#&gt; Warning: The `df_sem()` function expects a grouped data frame (i.e., from</span>
+<span class="co">#&gt; `dplyr::group_by()`). Returning the overall mean, sd, n and se.</span>
+<span class="co">#&gt; # A tibble: 1 x 4</span>
+<span class="co">#&gt;   mean_color_index     sd     n      se</span>
+<span class="co">#&gt;              &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt;</span>
+<span class="co">#&gt; 1           0.0120 0.0413   232 0.00271</span></code></pre></div>
 </div>
 <div id="one-sample-t-tests-for-all-sub-groups" class="section level2">
 <h2 class="hasAnchor">
 <a href="#one-sample-t-tests-for-all-sub-groups" class="anchor"></a>One-sample t-tests for all sub-groups</h2>
-<p>Now, we want to test whether <code>color_index</code> is significantly against 0 for each sub-group (<code>roi_id</code>). That is, for each <code>roi_id</code> sub-group, we want to test whether the values of column <code>color_index</code> of the data.frame <code>color_index</code> is significantly different from <code>0</code>. Here, we have eight sub-groups, which means we will get eight one-sample t-test results in total. At a first step analysis to figure out which brain region would be interesting, we don’t care much about the very detailed output from the <code>t.test</code> function provided by <code>{stats}</code> package. So, here we have this <code>t_test_one_sample</code> function that help us apply the same t-test to each sub-group, extract the key results, and wrap everything in a <code>data.frame</code>.</p>
-<p>Again, the data.frame <code>color_index</code> was already grouped by <code>roi_id</code>.</p>
+<p>Now suppose we want to test whether <code>color_index</code> is <em>significantly</em> different (i.e., significantly different than zero) for each possible sub-group (<code>roi_id</code>). Note that we are not computing pairwise comparisons yet, just whether the mean for each subgroup is different from zero. Here, we have eight sub-groups, which means we will get eight one-sample t-test results in total. As a first step in the analysis we probably don’t care much about all the detailed output from <code><a href="https://rdrr.io/r/stats/t.test.html">stats::t.test</a></code>. Instead, we’re just looking for mean difference and significance. This is what the <code>t_test_one_sample</code> function was designed to accommodate. We again pass the function a grouped data frame, and we get <span class="math inline">\(t\)</span>-test results back for each group.</p>
+<p>By default, a Bonferroni <span class="math inline">\(p\)</span>-value adjustment is applied, but any adjustment available through <code><a href="https://rdrr.io/r/stats/p.adjust.html">stats::p.adjust()</a></code> can be supplied. Similarly, each mean is compared to zero by default, but this can be adjusted through the optional <code>mu</code> argument. The interface for the function works essentially equivalanetly to <code><a href="../reference/df_sem.html">df_sem()</a></code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/t_test_one_sample.html">t_test_one_sample</a></span><span class="op">(</span><span class="va">color_index</span>, <span class="st">"color_index"</span>, mu <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">color_index</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">roi_id</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="../reference/t_test_one_sample.html">t_test_one_sample</a></span><span class="op">(</span><span class="va">color_index</span><span class="op">)</span>
 <span class="co">#&gt; # A tibble: 8 x 5</span>
 <span class="co">#&gt; # Groups:   roi_id [8]</span>
 <span class="co">#&gt;   roi_id  tvalue    df      p p_bonferroni</span>
@@ -250,11 +170,12 @@
 <span class="co">#&gt; 6 vIPS     2.67     28 0.0124       0.0991</span>
 <span class="co">#&gt; 7 vLatIPS  1.69     28 0.101        0.811 </span>
 <span class="co">#&gt; 8 VTC      1.16     28 0.257        1</span></code></pre></div>
-<p>Here, we see the t-values, dfs, ps, and bonferroni corrected ps! Nice, we get the t-stats for each brain region, and multiple comparison corrected p-values are even provided.</p>
-<p>However, I believe the bonferroni method is too conservative, and I want to compare the fdr method results with it. This time, we write things up in a <code>tidyverse</code> format again:</p>
+<p>Here, we see the t-values, degrees of freedom, as well as the uncorrected and bonferroni corrected <span class="math inline">\(p\)</span>-values! Nice! Note that the multiple comparison corrected <span class="math inline">\(p\)</span>-values are provided by the <code>p_bonferroni</code> column, but the name of this column will change depending on the method you want to use. Let’s try again, but this time using both the Bonferroni and the <a href="https://www.jstor.org/stable/2346101?seq=1#metadata_info_tab_contents">Benjamini and Hochberg (1995)</a> method. We’ll put this in a nice table as well.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">color_index_one_sample_t_res</span> <span class="op">&lt;-</span> <span class="va">color_index</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="../reference/t_test_one_sample.html">t_test_one_sample</a></span><span class="op">(</span><span class="st">"color_index"</span>, mu <span class="op">=</span> <span class="fl">0</span>, p_adjust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bonferroni"</span>,<span class="st">"fdr"</span><span class="op">)</span><span class="op">)</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">roi_id</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="../reference/t_test_one_sample.html">t_test_one_sample</a></span><span class="op">(</span><span class="va">color_index</span>, p_adjust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bonferroni"</span>, <span class="st">"BH"</span><span class="op">)</span><span class="op">)</span>
+
 <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">color_index_one_sample_t_res</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
@@ -263,7 +184,7 @@
 <th align="right">df</th>
 <th align="right">p</th>
 <th align="right">p_bonferroni</th>
-<th align="right">p_fdr</th>
+<th align="right">p_BH</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
@@ -332,15 +253,27 @@
 </tr>
 </tbody>
 </table>
-</div>
-<div id="significance-symbols-for-a-even-clearer-table-and-possible-visulization" class="section level2">
-<h2 class="hasAnchor">
-<a href="#significance-symbols-for-a-even-clearer-table-and-possible-visulization" class="anchor"></a>Significance symbols for a even clearer table and possible visulization</h2>
-<p>Usually, we want the significance symbol to highlight the result table or the plot. Here we have the <code>p_range</code> function to create the significance symbol:</p>
+<p>As before, if we our data frame is not grouped, we’ll get the stats returned, but with a warning.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span>
-<span class="va">color_index_one_sample_t_with_sig</span> <span class="op">&lt;-</span> <span class="va">color_index_one_sample_t_res</span> <span class="op">%&gt;%</span> 
+<code class="sourceCode R"><span class="va">color_index</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="../reference/t_test_one_sample.html">t_test_one_sample</a></span><span class="op">(</span><span class="va">color_index</span><span class="op">)</span>
+<span class="co">#&gt; Warning: The `t_test_one_sample()` function expects a grouped data frame (i.e.,</span>
+<span class="co">#&gt; from `dplyr::group_by()`). Returning statistics for the overall column.</span>
+<span class="co">#&gt; Warning: `...` must not be empty for ungrouped data frames.</span>
+<span class="co">#&gt; Did you want `data = everything()`?</span>
+<span class="co">#&gt; # A tibble: 1 x 4</span>
+<span class="co">#&gt;   tvalue    df         p p_bonferroni</span>
+<span class="co">#&gt;    &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;</span>
+<span class="co">#&gt; 1   4.44   231 0.0000142    0.0000142</span></code></pre></div>
+</div>
+<div id="significance-symbols-for-an-even-clearer-table-and-possible-visulization" class="section level2">
+<h2 class="hasAnchor">
+<a href="#significance-symbols-for-an-even-clearer-table-and-possible-visulization" class="anchor"></a>Significance symbols for an even clearer table and possible visulization</h2>
+<p>Usually, we want the significance symbol to highlight the result in a table or plot. Here we have the <code>p_range</code> function to create the significance symbol:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">color_index_one_sample_t_with_sig</span> <span class="op">&lt;-</span> <span class="va">color_index_one_sample_t_res</span> <span class="op">%&gt;%</span> 
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>sig_origin_p <span class="op">=</span> <span class="fu"><a href="../reference/p_range.html">p_range</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span><span class="op">)</span>
+
 <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">color_index_one_sample_t_with_sig</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
@@ -349,7 +282,7 @@
 <th align="right">df</th>
 <th align="right">p</th>
 <th align="right">p_bonferroni</th>
-<th align="right">p_fdr</th>
+<th align="right">p_BH</th>
 <th align="left">sig_origin_p</th>
 </tr></thead>
 <tbody>
@@ -428,20 +361,17 @@
 </tbody>
 </table>
 <p>You can use <code>p_range</code> for a single number too:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/p_range.html">p_range</a></span><span class="op">(</span><span class="fl">0.002</span><span class="op">)</span>
 <span class="co">#&gt; [1] "**"</span></code></pre></div>
 </div>
 <div id="two-sample-t-tests-for-all-sub-groups" class="section level2">
 <h2 class="hasAnchor">
 <a href="#two-sample-t-tests-for-all-sub-groups" class="anchor"></a>Two-sample t-tests for all sub-groups</h2>
-<p><code>t_test_two_sample</code> is for applying two-sample t-tests to all sub-groups.</p>
-<p>Here we have <code>color_index_two_sample</code>: * <code>subj_id</code>: identify the subjects. This labels the single data point within each <code>roi_id</code>. * <code>roi_id</code>: brain sub-region that of interest for the analysis. We are interested in eight brain regions. * <code>group</code>: whether the test was <code>Paired</code> condition or <code>Control</code> condition. * <code>color_effect</code>: the value that indicate the memory trace of color. For each <code>subj_id</code> at each with each test condition <code>group</code> at each brain region<code>roi_id</code>, we obtained a single <code>color_effect</code> value.</p>
-<p>Note, the data.frame was already grouped by <code>roi_id</code>.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<p>The <code>t_test_two_sample</code> function is used for applying two-sample t-tests to all sub-groups. This dataset has all the same columns as <code>color_index</code>, but also includes a <code>group</code> column specifying the condition of the experiement (paired versus control).</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">color_index_two_sample</span><span class="op">)</span>
 <span class="co">#&gt; # A tibble: 6 x 4</span>
-<span class="co">#&gt; # Groups:   roi_id [6]</span>
 <span class="co">#&gt;   subj_id roi_id  group  color_effect</span>
 <span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;fct&gt;         &lt;dbl&gt;</span>
 <span class="co">#&gt; 1 01      AnG     Paired     -0.0155 </span>
@@ -449,29 +379,12 @@
 <span class="co">#&gt; 3 01      LO      Paired     -0.00366</span>
 <span class="co">#&gt; 4 01      pIPS    Paired     -0.0398 </span>
 <span class="co">#&gt; 5 01      V1      Paired     -0.0120 </span>
-<span class="co">#&gt; 6 01      vIPS    Paired     -0.0366</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">color_index_two_sample</span><span class="op">)</span>
-<span class="co">#&gt; tibble [464 × 4] (S3: grouped_df/tbl_df/tbl/data.frame)</span>
-<span class="co">#&gt;  $ subj_id     : chr [1:464] "01" "01" "01" "01" ...</span>
-<span class="co">#&gt;  $ roi_id      : chr [1:464] "AnG" "dLatIPS" "LO" "pIPS" ...</span>
-<span class="co">#&gt;  $ group       : Factor w/ 2 levels "Paired","Control": 1 1 1 1 1 1 1 1 1 1 ...</span>
-<span class="co">#&gt;  $ color_effect: num [1:464] -0.01546 -0.04841 -0.00366 -0.03982 -0.01201 ...</span>
-<span class="co">#&gt;  - attr(*, "groups")= tibble [8 × 2] (S3: tbl_df/tbl/data.frame)</span>
-<span class="co">#&gt;   ..$ roi_id: chr [1:8] "AnG" "dLatIPS" "LO" "pIPS" ...</span>
-<span class="co">#&gt;   ..$ .rows : list&lt;int&gt; [1:8] </span>
-<span class="co">#&gt;   .. ..$ : int [1:58] 1 9 17 25 33 41 49 57 65 73 ...</span>
-<span class="co">#&gt;   .. ..$ : int [1:58] 2 10 18 26 34 42 50 58 66 74 ...</span>
-<span class="co">#&gt;   .. ..$ : int [1:58] 3 11 19 27 35 43 51 59 67 75 ...</span>
-<span class="co">#&gt;   .. ..$ : int [1:58] 4 12 20 28 36 44 52 60 68 76 ...</span>
-<span class="co">#&gt;   .. ..$ : int [1:58] 5 13 21 29 37 45 53 61 69 77 ...</span>
-<span class="co">#&gt;   .. ..$ : int [1:58] 6 14 22 30 38 46 54 62 70 78 ...</span>
-<span class="co">#&gt;   .. ..$ : int [1:58] 7 15 23 31 39 47 55 63 71 79 ...</span>
-<span class="co">#&gt;   .. ..$ : int [1:58] 8 16 24 32 40 48 56 64 72 80 ...</span>
-<span class="co">#&gt;   .. ..@ ptype: int(0) </span>
-<span class="co">#&gt;   ..- attr(*, ".drop")= logi TRUE</span></code></pre></div>
-<p>Here is the example of how to obtain the paired t-test for each sub-group:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/t_test_two_sample.html">t_test_two_sample</a></span><span class="op">(</span><span class="va">color_index_two_sample</span>, x <span class="op">=</span> <span class="st">"color_effect"</span>, y <span class="op">=</span> <span class="st">"group"</span>, paired <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
+<span class="co">#&gt; 6 01      vIPS    Paired     -0.0366</span></code></pre></div>
+<p>We can obtain paired t-test for each sub-group using a similar approach as before. Here we’re including the additional <code>paired = TRUE</code> argument to specify we want a paired <span class="math inline">\(t\)</span>-test. This argument defaults to <code>FALSE</code>.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">color_index_two_sample</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">roi_id</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="../reference/t_test_two_sample.html">t_test_two_sample</a></span><span class="op">(</span><span class="va">color_effect</span>, <span class="va">group</span>, paired <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 <span class="co">#&gt; # A tibble: 8 x 5</span>
 <span class="co">#&gt; # Groups:   roi_id [8]</span>
 <span class="co">#&gt;   roi_id  tvalue    df      p p_bonferroni</span>
@@ -484,89 +397,6 @@
 <span class="co">#&gt; 6 vIPS     2.67     28 0.0124       0.0991</span>
 <span class="co">#&gt; 7 vLatIPS  1.69     28 0.101        0.811 </span>
 <span class="co">#&gt; 8 VTC      1.16     28 0.257        1</span></code></pre></div>
-<p>Can be integrated into <code>tidyverse</code> pipeline too.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">color_index_two_sample_t_res</span> <span class="op">&lt;-</span> <span class="va">color_index_two_sample</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="../reference/t_test_two_sample.html">t_test_two_sample</a></span><span class="op">(</span>
-    x <span class="op">=</span> <span class="st">"color_effect"</span>, y <span class="op">=</span> <span class="st">"group"</span>, paired <span class="op">=</span> <span class="cn">TRUE</span>, p_adjust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bonferroni"</span>,<span class="st">"fdr"</span><span class="op">)</span>
-  <span class="op">)</span>
-<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">color_index_two_sample_t_res</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="left">roi_id</th>
-<th align="right">tvalue</th>
-<th align="right">df</th>
-<th align="right">p</th>
-<th align="right">p_bonferroni</th>
-<th align="right">p_fdr</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">AnG</td>
-<td align="right">0.570</td>
-<td align="right">28</td>
-<td align="right">0.573</td>
-<td align="right">1.000</td>
-<td align="right">0.573</td>
-</tr>
-<tr class="even">
-<td align="left">dLatIPS</td>
-<td align="right">1.678</td>
-<td align="right">28</td>
-<td align="right">0.104</td>
-<td align="right">0.835</td>
-<td align="right">0.167</td>
-</tr>
-<tr class="odd">
-<td align="left">LO</td>
-<td align="right">2.270</td>
-<td align="right">28</td>
-<td align="right">0.031</td>
-<td align="right">0.249</td>
-<td align="right">0.124</td>
-</tr>
-<tr class="even">
-<td align="left">pIPS</td>
-<td align="right">1.848</td>
-<td align="right">28</td>
-<td align="right">0.075</td>
-<td align="right">0.601</td>
-<td align="right">0.167</td>
-</tr>
-<tr class="odd">
-<td align="left">V1</td>
-<td align="right">1.221</td>
-<td align="right">28</td>
-<td align="right">0.232</td>
-<td align="right">1.000</td>
-<td align="right">0.294</td>
-</tr>
-<tr class="even">
-<td align="left">vIPS</td>
-<td align="right">2.673</td>
-<td align="right">28</td>
-<td align="right">0.012</td>
-<td align="right">0.099</td>
-<td align="right">0.099</td>
-</tr>
-<tr class="odd">
-<td align="left">vLatIPS</td>
-<td align="right">1.694</td>
-<td align="right">28</td>
-<td align="right">0.101</td>
-<td align="right">0.811</td>
-<td align="right">0.167</td>
-</tr>
-<tr class="even">
-<td align="left">VTC</td>
-<td align="right">1.156</td>
-<td align="right">28</td>
-<td align="right">0.257</td>
-<td align="right">1.000</td>
-<td align="right">0.294</td>
-</tr>
-</tbody>
-</table>
 </div>
   </div>
 

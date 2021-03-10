@@ -1,13 +1,18 @@
 Package: roistats
-Title: Convienience functions for applying basic stats to sub-groups
-Version: 0.1.0.9000
+Title: Convenience Functions for Applying Basic Stats to Sub-Groups
+Version: 0.1.1
 Authors@R: 
-    person(given = "Yufei",
+    c(person(given = "Yufei",
            family = "Zhao",
            role = c("aut", "cre"),
            email = "fay.zz0213@gmail.com",
-           comment = c(ORCID = "0000-0002-6511-8507"))
-Description: The goal of this package is for easily applying same t-tests/basic data description across several sub-groups, with the output as a nice arranged data.frame. Multiple comparison and the significance symbols are also provided.
+           comment = c(ORCID = "0000-0002-6511-8507")),
+      person(given = "Daniel",
+             family = "Anderson",
+             role = c("ctb"),
+             email = "daniela@uoregon.edu",
+             comment = c(ORCID = "https://orcid.org/0000-0003-4699-4680")))
+Description: Easily applying same t-tests/basic data description across several sub-groups, with the output as a nice arranged data.frame. Multiple comparison and the significance symbols are also provided.
 License: MIT + file LICENSE
 Depends: 
     R (>= 3.5.0)

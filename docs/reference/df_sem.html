@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">roistats</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.1</span>
       </span>
     </div>
 
@@ -139,12 +139,12 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>data</th>
-      <td><p>A grouped data frame. It should be grouped by the intended sub-groups which you want to do the
+      <td><p>A data frame, generally grouped by the intended sub-groups which you want to compare for the
 same t-test.</p></td>
     </tr>
     <tr>
       <th>x</th>
-      <td><p>Column name of the variable which you want to get the mean, sd, and standard error of the mean (SEM).</p></td>
+      <td><p>A (bare) column name of the variable which you want to get the mean, sd, and standard error of the mean (SEM).</p></td>
     </tr>
     </table>
 
@@ -156,31 +156,17 @@ consisting of characters. The columns that are always present are:
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='fu'>df_sem</span><span class='op'>(</span><span class='va'>color_index</span>, <span class='va'>color_index</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span style='color: #555555;'># A tibble: 8 x 5</span><span>
-#&gt;   roi_id  mean_color_index     sd     n      se
-#&gt;   </span><span style='color: #555555;font-style: italic;'>&lt;chr&gt;</span><span>              </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span>  </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span> </span><span style='color: #555555;font-style: italic;'>&lt;int&gt;</span><span>   </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span>
-#&gt; </span><span style='color: #555555;'>1</span><span> AnG              0.005</span><span style='text-decoration: underline;'>37</span><span> 0.050</span><span style='text-decoration: underline;'>7</span><span>    29 0.009</span><span style='text-decoration: underline;'>42</span><span>
-#&gt; </span><span style='color: #555555;'>2</span><span> dLatIPS          0.015</span><span style='text-decoration: underline;'>9</span><span>  0.051</span><span style='text-decoration: underline;'>0</span><span>    29 0.009</span><span style='text-decoration: underline;'>46</span><span>
-#&gt; </span><span style='color: #555555;'>3</span><span> LO               0.018</span><span style='text-decoration: underline;'>1</span><span>  0.042</span><span style='text-decoration: underline;'>8</span><span>    29 0.007</span><span style='text-decoration: underline;'>96</span><span>
-#&gt; </span><span style='color: #555555;'>4</span><span> pIPS             0.010</span><span style='text-decoration: underline;'>2</span><span>  0.029</span><span style='text-decoration: underline;'>7</span><span>    29 0.005</span><span style='text-decoration: underline;'>52</span><span>
-#&gt; </span><span style='color: #555555;'>5</span><span> V1               0.009</span><span style='text-decoration: underline;'>55</span><span> 0.042</span><span style='text-decoration: underline;'>1</span><span>    29 0.007</span><span style='text-decoration: underline;'>82</span><span>
-#&gt; </span><span style='color: #555555;'>6</span><span> vIPS             0.016</span><span style='text-decoration: underline;'>2</span><span>  0.032</span><span style='text-decoration: underline;'>7</span><span>    29 0.006</span><span style='text-decoration: underline;'>07</span><span>
-#&gt; </span><span style='color: #555555;'>7</span><span> vLatIPS          0.016</span><span style='text-decoration: underline;'>2</span><span>  0.051</span><span style='text-decoration: underline;'>4</span><span>    29 0.009</span><span style='text-decoration: underline;'>55</span><span>
-#&gt; </span><span style='color: #555555;'>8</span><span> VTC              0.004</span><span style='text-decoration: underline;'>68</span><span> 0.021</span><span style='text-decoration: underline;'>8</span><span>    29 0.004</span><span style='text-decoration: underline;'>05</span><span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='warning'>Warning: The `df_sem()` function expects a grouped data frame (i.e., from `dplyr::group_by()`). Returning the overall mean, sd, n and se.</span></div><div class='output co'>#&gt; <span style='color: #555555;'># A tibble: 1 x 4</span><span>
+#&gt;   mean_color_index     sd     n      se
+#&gt;              </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span>  </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span> </span><span style='color: #555555;font-style: italic;'>&lt;int&gt;</span><span>   </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span>
+#&gt; </span><span style='color: #555555;'>1</span><span>           0.012</span><span style='text-decoration: underline;'>0</span><span> 0.041</span><span style='text-decoration: underline;'>3</span><span>   232 0.002</span><span style='text-decoration: underline;'>71</span><span></div><div class='input'>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://magrittr.tidyverse.org'>magrittr</a></span><span class='op'>)</span>
 <span class='va'>color_index</span> <span class='op'>%&gt;%</span>
   <span class='fu'>df_sem</span><span class='op'>(</span><span class='va'>color_index</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; </span><span style='color: #555555;'># A tibble: 8 x 5</span><span>
-#&gt;   roi_id  mean_color_index     sd     n      se
-#&gt;   </span><span style='color: #555555;font-style: italic;'>&lt;chr&gt;</span><span>              </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span>  </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span> </span><span style='color: #555555;font-style: italic;'>&lt;int&gt;</span><span>   </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span>
-#&gt; </span><span style='color: #555555;'>1</span><span> AnG              0.005</span><span style='text-decoration: underline;'>37</span><span> 0.050</span><span style='text-decoration: underline;'>7</span><span>    29 0.009</span><span style='text-decoration: underline;'>42</span><span>
-#&gt; </span><span style='color: #555555;'>2</span><span> dLatIPS          0.015</span><span style='text-decoration: underline;'>9</span><span>  0.051</span><span style='text-decoration: underline;'>0</span><span>    29 0.009</span><span style='text-decoration: underline;'>46</span><span>
-#&gt; </span><span style='color: #555555;'>3</span><span> LO               0.018</span><span style='text-decoration: underline;'>1</span><span>  0.042</span><span style='text-decoration: underline;'>8</span><span>    29 0.007</span><span style='text-decoration: underline;'>96</span><span>
-#&gt; </span><span style='color: #555555;'>4</span><span> pIPS             0.010</span><span style='text-decoration: underline;'>2</span><span>  0.029</span><span style='text-decoration: underline;'>7</span><span>    29 0.005</span><span style='text-decoration: underline;'>52</span><span>
-#&gt; </span><span style='color: #555555;'>5</span><span> V1               0.009</span><span style='text-decoration: underline;'>55</span><span> 0.042</span><span style='text-decoration: underline;'>1</span><span>    29 0.007</span><span style='text-decoration: underline;'>82</span><span>
-#&gt; </span><span style='color: #555555;'>6</span><span> vIPS             0.016</span><span style='text-decoration: underline;'>2</span><span>  0.032</span><span style='text-decoration: underline;'>7</span><span>    29 0.006</span><span style='text-decoration: underline;'>07</span><span>
-#&gt; </span><span style='color: #555555;'>7</span><span> vLatIPS          0.016</span><span style='text-decoration: underline;'>2</span><span>  0.051</span><span style='text-decoration: underline;'>4</span><span>    29 0.009</span><span style='text-decoration: underline;'>55</span><span>
-#&gt; </span><span style='color: #555555;'>8</span><span> VTC              0.004</span><span style='text-decoration: underline;'>68</span><span> 0.021</span><span style='text-decoration: underline;'>8</span><span>    29 0.004</span><span style='text-decoration: underline;'>05</span><span></div></span></pre>
+</div><div class='output co'>#&gt; <span class='warning'>Warning: The `df_sem()` function expects a grouped data frame (i.e., from `dplyr::group_by()`). Returning the overall mean, sd, n and se.</span></div><div class='output co'>#&gt; </span><span style='color: #555555;'># A tibble: 1 x 4</span><span>
+#&gt;   mean_color_index     sd     n      se
+#&gt;              </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span>  </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span> </span><span style='color: #555555;font-style: italic;'>&lt;int&gt;</span><span>   </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span>
+#&gt; </span><span style='color: #555555;'>1</span><span>           0.012</span><span style='text-decoration: underline;'>0</span><span> 0.041</span><span style='text-decoration: underline;'>3</span><span>   232 0.002</span><span style='text-decoration: underline;'>71</span><span></div></span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
